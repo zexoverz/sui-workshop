@@ -1,4 +1,4 @@
-# Sui Blockchain Workshop day 1 (25 july 2025)
+# Sui Blockchain Workshop day 1 (26 july 2025)
 
 ## Workshop Overview
 **Duration**: 1 Day (6 hours)  
