@@ -741,7 +741,7 @@ sui client call \
   --package <PACKAGE_ID> \
   --module my_token \
   --function mint \
-  --args <ADMIN_CAP_ID> <TREASURY_CAP_ID> 10000000000 <YOUR_ADDRESS> \
+  --args <ADMIN_CAP_ID> <TREASURY_CAP_ID> 10000000000 <YOUR_ADDRESS> 
 ```
 
 ## ⚡ Gas Optimization Best Practices (30 minutes)
