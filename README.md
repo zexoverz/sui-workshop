@@ -445,7 +445,7 @@ version = "0.0.1"
 edition = "2024.beta"
 
 [dependencies]
-Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/devnet" }
+Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/testnet" }
 
 [addresses]
 token_system = "0x0"
@@ -457,9 +457,9 @@ Create `sources/my_token.move`:
 ```move
 module token_system::my_token {
     use sui::coin::{Self, Coin, TreasuryCap};
-    use sui::object::{Self, UID};
+    use sui::object::UID;
     use sui::transfer;
-    use sui::tx_context::{Self, TxContext};
+    use sui::tx_context::TxContext;
     use sui::balance::{Self, Balance};
     use sui::event;
     use std::option;
@@ -635,7 +635,7 @@ module token_system::token_test {
     
     #[test]
     fun test_token_minting() {
-        let admin = @0xAD31N;
+        let admin = @0xAD31;
         let user = @0xABBA;
         
         let mut scenario = test_scenario::begin(admin);
@@ -677,7 +677,7 @@ module token_system::token_test {
     
     #[test]
     fun test_vault_operations() {
-        let admin = @0xAD31N;
+        let admin = @0xAD31;
         let mut scenario = test_scenario::begin(admin);
         
         // Initialize
