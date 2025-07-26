@@ -1173,7 +1173,7 @@ VITE_PINATA_GATEWAY = "";
 
 create `src/hooks/use-create-mint-transaction.ts`
 
-````ts
+```ts
 import { Transaction } from "@mysten/sui/transactions";
 import { useNetworkVariable } from "../networkConfig";
 import {
