@@ -102,7 +102,7 @@ sui keytool import [YOUR_PRIVATE_KEY] ed25519
 sui client addresses
 
 # Switch to use the imported address if needed
-sui client switch --address [YOUR_WALLET_ADDRESS]
+sui client switch --address [YOUR_WALLET_ALIAS]
 ```
 
 **Option B: Use wallet for viewing, CLI for deployment (recommended)**
