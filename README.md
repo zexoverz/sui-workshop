@@ -746,6 +746,12 @@ sui client call \
   --args <ADMIN_CAP_ID> <TREASURY_CAP_ID> 10000000000 <YOUR_ADDRESS> 
 ```
 
+## QUIZ & CHALLANGE
+
+- Deposit in to token vault call 
+- withdraw token vault call
+- burn token 
+
 ## ⚡ Gas Optimization Best Practices (30 minutes)
 
 ### Understanding Gas in Sui
