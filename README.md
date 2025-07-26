@@ -72,6 +72,8 @@ sui client
 # Check available environments
 sui client envs
 
+sui client new-env --alias testnet --rpc https://fullnode.testnet.sui.io:443
+
 # Switch to testnet (if not already default)
 sui client switch --env testnet
 
