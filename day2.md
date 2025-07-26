@@ -1079,7 +1079,7 @@ bunx shadcn@latest add card button badge input select dialog
 
 Replace `networkConfig.ts`
 
-```bash
+```ts
 import { getFullnodeUrl } from "@mysten/sui/client";
 import { createNetworkConfig } from "@mysten/dapp-kit";
 
@@ -1120,7 +1120,7 @@ export { useNetworkVariable, useNetworkVariables, networkConfig };
 
 Replace `main.tsx`
 
-```bash
+```ts
 import React from "react";
 import ReactDOM from "react-dom/client";
 import "@mysten/dapp-kit/dist/index.css";
@@ -1265,7 +1265,7 @@ export function useCreateMintTransaction() {
   return query;
 }
 
-``
+```
 
 ### Step 4: Create Main App Component
 
