@@ -995,7 +995,8 @@ function createMintTransaction(
 bun create @mysten/dapp --template react-client-dapp
 √ What is the name of your dApp? (this will be used as the directory name) · simple-nft-dapp
 
-bun add tailwindcss @tailwindcss/vite add -D @types/node react-hot-toast
+bun add tailwindcss @tailwindcss/vite react-hot-toast pinata
+bun add -D @types/node
 ```
 
 replace `tsconfig.json`
