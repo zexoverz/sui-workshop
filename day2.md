@@ -887,7 +887,7 @@ sui client call \
   --package <PACKAGE_ID> \
   --module simple_art_nft \
   --function create_collection \
-  --args "\"My Art Collection\"" "\"Simple NFT collection\"" 100 1000000000 604800000 <CLOCK_ID> \
+  --args "\"My Art Collection\"" "\"Simple NFT collection\"" 100 10000000 604800000 <CLOCK_ID> \
   --gas-budget 15000000
 
 # Activate minting
@@ -1199,6 +1199,7 @@ export type CreateMintTransactionDto = {
 };
 
 export function useCreateMintTransaction() {
+  const queryClient = useQueryClient();
   const account = useCurrentAccount();
   const simpleArtNFT = useNetworkVariable("simpleArtNFT");
   const suiClient = useSuiClient();
@@ -1267,6 +1268,7 @@ export function useCreateMintTransaction() {
       onSucces();
       console.log(effects?.created?.[0].reference.objectId);
       toast.success("Mint Success", { id: "mint-nft" });
+      queryClient.refetchQueries({ queryKey: ["getUserNFT"] });
     },
   });
 
@@ -1338,7 +1340,11 @@ export function useGetUserNFT() {
       },
       options: { showContent: true, showOwner: true },
     },
-    { enabled: account !== null }
+    {
+      enabled: account !== null,
+      queryKey: ["getUserNFT"],
+      refetchInterval: 10_000,
+    },
   );
 
   const parsed = useMemo(() => {
@@ -1745,6 +1751,9 @@ export function NFTGrid() {
                     <h3 className="font-semibold text-[#cdd6f4] mb-2">
                       {fields?.name || "Unnamed NFT"}
                     </h3>
+                    <h4 className="font-semibold text-[#cdd6f4] mb-2">
+                      {fields?.description || "No description"}
+                    </h4>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1 text-[#f38ba8]">
                         <Heart className="w-4 h-4" />
