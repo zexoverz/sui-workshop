@@ -49,16 +49,19 @@ export function useCreateMintTransaction() {
         (x) => +x.balance > requiredAmount,
       );
       if (!suitableCoin) {
-        throw new Error(`Insufficient SUI balance. Need ${formatSUI(requiredAmount)} SUI`);
+        throw new Error(
+          `Insufficient SUI balance. Need ${formatSUI(requiredAmount)} SUI`,
+        );
       }
-
-      console.log(suitableCoin);
 
       toast.loading("Uploading Image...", { id: "mint-nft" });
       const response = await pinata.upload.public.file(dto.imageFile);
       const link = `https://${import.meta.env.VITE_PINATA_GATEWAY}/ipfs/${response.cid}`;
 
       const tx = new Transaction();
+
+      const [mintCoin] = tx.splitCoins(tx.gas, [requiredAmount]);
+
       tx.moveCall({
         target: `${simpleArtNFT}::simple_art_nft::mint_nft`,
         arguments: [
@@ -66,8 +69,7 @@ export function useCreateMintTransaction() {
           tx.pure("string", dto.name),
           tx.pure("string", dto.description),
           tx.pure("string", link),
-          tx.object(suitableCoin.coinObjectId),
-          // TIME STUFF
+          mintCoin,
           tx.object("0x6"),
         ],
       });

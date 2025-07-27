@@ -1115,7 +1115,6 @@ const { networkConfig, useNetworkVariable, useNetworkVariables } =
   });
 
 export { useNetworkVariable, useNetworkVariables, networkConfig };
-
 ```
 
 Replace `main.tsx`
@@ -1144,9 +1143,8 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
         </WalletProvider>
       </SuiClientProvider>
     </QueryClientProvider>
-  </React.StrictMode>,
+  </React.StrictMode>
 );
-
 ```
 
 Create Pinata Service on `src/services/pinata.ts`
@@ -1205,7 +1203,7 @@ export function useCreateMintTransaction() {
       owner: account?.address!,
       coinType: "0x2::sui::SUI",
     },
-    { enabled: account !== null },
+    { enabled: account !== null }
   );
 
   const query = useMutation({
@@ -1216,25 +1214,30 @@ export function useCreateMintTransaction() {
     mutationFn: async ([dto, requiredAmount, onSucces]: [
       dto: CreateMintTransactionDto,
       requiredAmount: number,
-      onSucces: () => unknown,
+      onSucces: () => unknown
     ]) => {
       if (!account) return;
       if (!dto.imageFile) return;
 
       const suitableCoin = coinQuery.data?.data.find(
-        (x) => +x.balance > requiredAmount,
+        (x) => +x.balance > requiredAmount
       );
       if (!suitableCoin) {
-        throw new Error(`Insufficient SUI balance. Need ${formatSUI(requiredAmount)} SUI`);
+        throw new Error(
+          `Insufficient SUI balance. Need ${formatSUI(requiredAmount)} SUI`
+        );
       }
-
-      console.log(suitableCoin);
 
       toast.loading("Uploading Image...", { id: "mint-nft" });
       const response = await pinata.upload.public.file(dto.imageFile);
-      const link = `https://${import.meta.env.VITE_PINATA_GATEWAY}/ipfs/${response.cid}`;
+      const link = `https://${import.meta.env.VITE_PINATA_GATEWAY}/ipfs/${
+        response.cid
+      }`;
 
       const tx = new Transaction();
+
+      const [mintCoin] = tx.splitCoins(tx.gas, [requiredAmount]);
+
       tx.moveCall({
         target: `${simpleArtNFT}::simple_art_nft::mint_nft`,
         arguments: [
@@ -1242,8 +1245,7 @@ export function useCreateMintTransaction() {
           tx.pure("string", dto.name),
           tx.pure("string", dto.description),
           tx.pure("string", link),
-          tx.object(suitableCoin.coinObjectId),
-          // TIME STUFF
+          mintCoin,
           tx.object("0x6"),
         ],
       });
@@ -1264,7 +1266,6 @@ export function useCreateMintTransaction() {
 
   return query;
 }
-
 ```
 
 ### Step 4: Create Main App Component
@@ -1272,16 +1273,16 @@ export function useCreateMintTransaction() {
 Update `src/App.tsx`:
 
 ```ts
-import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { SuiClientProvider } from '@mysten/sui.js/client';
-import { WalletProvider } from '@mysten/wallet-adapter-react';
-import { WalletStandardAdapterProvider } from '@mysten/wallet-adapter-wallet-standard';
-import NFTMintingApp from './components/NFTMintingApp';
-import './index.css';
+import React from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SuiClientProvider } from "@mysten/sui.js/client";
+import { WalletProvider } from "@mysten/wallet-adapter-react";
+import { WalletStandardAdapterProvider } from "@mysten/wallet-adapter-wallet-standard";
+import NFTMintingApp from "./components/NFTMintingApp";
+import "./index.css";
 
 const suiClient = new SuiClient({
-  url: 'https://fullnode.testnet.sui.io:443',
+  url: "https://fullnode.testnet.sui.io:443",
 });
 
 const queryClient = new QueryClient();
@@ -1301,7 +1302,7 @@ function App() {
 }
 
 export default App;
-````
+```
 
 create `src/hooks/use-get-collection-info.ts`
 
