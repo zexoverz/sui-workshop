@@ -1153,7 +1153,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 );
 ```
 
-Create Pinata Service on `src/services/pinata.ts`
+Create Pinata Service on `src/service/pinata.ts`
 
 ```ts
 import { PinataSDK } from "pinata";
