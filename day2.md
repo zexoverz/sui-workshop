@@ -1274,42 +1274,6 @@ export function useCreateMintTransaction() {
 }
 ```
 
-### Step 4: Create Main App Component
-
-Update `src/App.tsx`:
-
-```ts
-import React from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { SuiClientProvider } from "@mysten/sui.js/client";
-import { WalletProvider } from "@mysten/wallet-adapter-react";
-import { WalletStandardAdapterProvider } from "@mysten/wallet-adapter-wallet-standard";
-import NFTMintingApp from "./components/NFTMintingApp";
-import "./index.css";
-
-const suiClient = new SuiClient({
-  url: "https://fullnode.testnet.sui.io:443",
-});
-
-const queryClient = new QueryClient();
-
-function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <SuiClientProvider client={suiClient}>
-        <WalletStandardAdapterProvider>
-          <WalletProvider>
-            <NFTMintingApp />
-          </WalletProvider>
-        </WalletStandardAdapterProvider>
-      </SuiClientProvider>
-    </QueryClientProvider>
-  );
-}
-
-export default App;
-```
-
 create `src/hooks/use-get-collection-info.ts`
 
 ```ts
@@ -1384,6 +1348,43 @@ export function useGetUserNFT() {
   return [parsed, rest] as const;
 }
 ```
+
+### Step 4: Create Main App Component
+
+Update `src/App.tsx`:
+
+```ts
+import React from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { SuiClientProvider } from "@mysten/sui.js/client";
+import { WalletProvider } from "@mysten/wallet-adapter-react";
+import { WalletStandardAdapterProvider } from "@mysten/wallet-adapter-wallet-standard";
+import NFTMintingApp from "./components/NFTMintingApp";
+import "./index.css";
+
+const suiClient = new SuiClient({
+  url: "https://fullnode.testnet.sui.io:443",
+});
+
+const queryClient = new QueryClient();
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <SuiClientProvider client={suiClient}>
+        <WalletStandardAdapterProvider>
+          <WalletProvider>
+            <NFTMintingApp />
+          </WalletProvider>
+        </WalletStandardAdapterProvider>
+      </SuiClientProvider>
+    </QueryClientProvider>
+  );
+}
+
+export default App;
+```
+
 
 ### Step 5: Create Main NFT App Component
 
