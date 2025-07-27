@@ -1349,44 +1349,8 @@ export function useGetUserNFT() {
 }
 ```
 
-### Step 4: Create Main App Component
 
-Update `src/App.tsx`:
-
-```ts
-import React from "react";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { SuiClientProvider } from "@mysten/sui.js/client";
-import { WalletProvider } from "@mysten/wallet-adapter-react";
-import { WalletStandardAdapterProvider } from "@mysten/wallet-adapter-wallet-standard";
-import NFTMintingApp from "./components/NFTMintingApp";
-import "./index.css";
-
-const suiClient = new SuiClient({
-  url: "https://fullnode.testnet.sui.io:443",
-});
-
-const queryClient = new QueryClient();
-
-function App() {
-  return (
-    <QueryClientProvider client={queryClient}>
-      <SuiClientProvider client={suiClient}>
-        <WalletStandardAdapterProvider>
-          <WalletProvider>
-            <NFTMintingApp />
-          </WalletProvider>
-        </WalletStandardAdapterProvider>
-      </SuiClientProvider>
-    </QueryClientProvider>
-  );
-}
-
-export default App;
-```
-
-
-### Step 5: Create Main NFT App Component
+### Step 4: Create Main NFT App Component
 
 Create `src/components/mint-section.tsx`:
 
@@ -1961,7 +1925,7 @@ export function App() {
 export default App;
 ```
 
-### Step 6: Run the dApp
+### Step 5: Run the dApp
 
 ```bash
 bun run dev
