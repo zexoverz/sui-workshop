@@ -998,7 +998,7 @@ bun create @mysten/dapp --template react-client-dapp
 bun add tailwindcss @tailwindcss/vite add -D @types/node react-hot-toast
 ```
 
-replace tsconfig.json
+replace `tsconfig.json`
 
 ```json
 {
@@ -1032,7 +1032,7 @@ replace tsconfig.json
 }
 ```
 
-replace tsconfig.node.json
+replace `tsconfig.node.json`
 
 ```json
 {
@@ -1051,7 +1051,7 @@ replace tsconfig.node.json
 }
 ```
 
-replace vite.config.mts
+replace `vite.config.mts`
 
 ```mts
 import { defineConfig } from "vite";
@@ -1069,10 +1069,15 @@ export default defineConfig({
   },
 });
 ```
+add `src/index.css`
+```css
+@import "tailwindcss";
+```
 
+add shadcn
 ```bash
-# Add Shadcn
 bunx shadcn@latest add card button badge input select dialog
+? You need to create a components.json file to add components. Proceed? » (Y/n) Y
 ```
 
 ### Step 2: Setup Constants
