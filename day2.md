@@ -1,7 +1,7 @@
-
 # Sui Blockchain Workshop Day 2 (27 July 2025)
 
 ## Workshop Overview
+
 **Duration**: 1 Day (6 hours)  
 **Target Audience**: Developers who completed Day 1  
 **Prerequisites**: Day 1 completion, basic React/TypeScript knowledge  
@@ -12,7 +12,9 @@
 # 🚀 Module 3: Advanced Smart Contract Development (9:00 AM - 12:00 PM)
 
 ## 🎯 Learning Objectives
+
 By the end of this module, you will:
+
 - Learn advanced Sui and Move features
 - Understand ownership, dynamic fields, and time-based logic
 - Build a complete NFT minting system with metadata
@@ -21,9 +23,11 @@ By the end of this module, you will:
 ## 🧠 Key Topics
 
 ### Object-Centric Storage Model
+
 Unlike traditional blockchains with global storage, Sui uses object-centric storage:
 
 **Traditional Blockchain (Account-Based):**
+
 ```solidity
 // Ethereum style - global mapping
 mapping(address => uint256) public balances;
@@ -31,6 +35,7 @@ mapping(uint256 => TokenData) public tokens;
 ```
 
 **Sui Object-Centric:**
+
 ```move
 // Everything is an object with unique ID
 public struct NFT has key, store {
@@ -42,6 +47,7 @@ public struct NFT has key, store {
 ```
 
 **Key Benefits:**
+
 - **No Global State Conflicts**: Objects can be processed in parallel
 - **Clear Ownership**: Each object has a specific owner
 - **Type Safety**: Objects are strongly typed
@@ -63,6 +69,7 @@ transfer::freeze_object(metadata);
 ```
 
 **When to Use Each:**
+
 - **Shared**: Collections, marketplaces, multi-user systems
 - **Owned**: Individual NFTs, tokens, user profiles
 - **Immutable**: Metadata, configuration, constants
@@ -99,6 +106,7 @@ let has_color: bool = df::exists_(&nft.id, b"color");
 ```
 
 **Use Cases:**
+
 - NFT attributes that vary by collection
 - User profiles with different data fields
 - Game items with varying properties
@@ -125,7 +133,7 @@ public fun is_mint_active(
     clock: &Clock
 ): bool {
     let current_time = clock::timestamp_ms(clock);
-    current_time >= collection.mint_start_time && 
+    current_time >= collection.mint_start_time &&
     current_time <= collection.mint_end_time &&
     collection.total_minted < collection.max_supply
 }
@@ -138,19 +146,21 @@ public entry fun mint_nft(
     ctx: &mut TxContext
 ) {
     assert!(is_mint_active(collection, clock), 0);
-    
+
     // Mint NFT logic here
     collection.total_minted = collection.total_minted + 1;
 }
 ```
 
 **Clock Object Properties:**
+
 - Singleton object with ID `0x6`
 - Read-only access to current timestamp
 - Consensus-based time (not local machine time)
 - Millisecond precision
 
 **Common Time-Based Patterns:**
+
 1. **Timed Minting**: Limited time mint windows
 2. **Auctions**: Timed bidding periods
 3. **Staking**: Lock periods and cooldowns
@@ -166,7 +176,7 @@ fun init(ctx: &mut TxContext) {
     // Create admin capability
     let admin_cap = AdminCap { id: object::new(ctx) };
     transfer::transfer(admin_cap, tx_context::sender(ctx));
-    
+
     // Create shared collection
     let collection = Collection {
         id: object::new(ctx),
@@ -217,6 +227,7 @@ fun validate_nft_data(name: &vector<u8>): bool {
 ### Gas Optimization Techniques
 
 **1. Efficient Data Structures:**
+
 ```move
 // Instead of multiple separate fields
 public struct BadNFT has key {
@@ -236,6 +247,7 @@ public struct GoodNFT has key {
 ```
 
 **2. Minimize Object Creation:**
+
 ```move
 // Expensive - creates many objects
 public entry fun bad_batch_mint(count: u64, ctx: &mut TxContext) {
@@ -260,12 +272,14 @@ public entry fun good_batch_mint(
 ## ✅ Exercise 1: Simple NFT Collection with Advanced Features (90 minutes)
 
 ### Step 1: Create Simple Advanced NFT Project
+
 ```bash
 sui move new simple_nft_collection
 cd simple_nft_collection
 ```
 
 ### Step 2: Configure Move.toml
+
 ```toml
 [package]
 name = "simple_nft_collection"
@@ -367,7 +381,7 @@ module simple_nft_collection::simple_art_nft {
             utf8(b"creator"),
             utf8(b"project_url"),
         ];
-        
+
         let values = vector[
             utf8(b"{name}"),
             utf8(b"{description}"),
@@ -375,11 +389,11 @@ module simple_nft_collection::simple_art_nft {
             utf8(b"{creator}"),
             utf8(b"https://myproject.com"),
         ];
-        
+
         let publisher = package::claim(witness, ctx);
         let mut display = display::new_with_fields<SimpleNFT>(&publisher, keys, values, ctx);
         display::update_version(&mut display);
-        
+
         transfer::public_transfer(publisher, tx_context::sender(ctx));
         transfer::public_transfer(display, tx_context::sender(ctx));
     }
@@ -397,7 +411,7 @@ module simple_nft_collection::simple_art_nft {
         ctx: &mut TxContext
     ): ID {
         let current_time = clock::timestamp_ms(clock);
-        
+
         let collection = Collection {
             id: object::new(ctx),
             name: string::utf8(name),
@@ -428,7 +442,7 @@ module simple_nft_collection::simple_art_nft {
 
         transfer::transfer(admin_cap, tx_context::sender(ctx));
         transfer::share_object(collection);
-        
+
         collection_id
     }
 
@@ -457,16 +471,16 @@ module simple_nft_collection::simple_art_nft {
         // Check if minting is active
         assert!(collection.is_active, EMintNotActive);
         assert!(is_mint_active(collection, clock), EMintNotActive);
-        
+
         // Check payment
         assert!(coin::value(&payment) >= collection.mint_price, EInsufficientPayment);
-        
+
         // Check supply
         assert!(collection.total_supply < collection.max_supply, EMaxSupplyReached);
-        
+
         // Transfer payment to creator
         transfer::public_transfer(payment, collection.creator);
-        
+
         // Mint NFT
         let mut nft = SimpleNFT {
             id: object::new(ctx),
@@ -507,7 +521,7 @@ module simple_nft_collection::simple_art_nft {
     ) {
         assert!(admin_cap.collection_id == object::uid_to_inner(&collection.id), ENotAuthorized);
         assert!(collection.total_supply < collection.max_supply, EMaxSupplyReached);
-        
+
         let mut nft = SimpleNFT {
             id: object::new(ctx),
             name: string::utf8(name),
@@ -571,9 +585,9 @@ module simple_nft_collection::simple_art_nft {
     /// Check if minting is currently active
     public fun is_mint_active(collection: &Collection, clock: &Clock): bool {
         if (!collection.is_active) return false;
-        
+
         let current_time = clock::timestamp_ms(clock);
-        current_time >= collection.mint_start_time && 
+        current_time >= collection.mint_start_time &&
         current_time <= collection.mint_end_time &&
         collection.total_supply < collection.max_supply
     }
@@ -641,14 +655,14 @@ module simple_nft_collection::simple_nft_test {
     fun test_complete_nft_flow() {
         let mut scenario = test_scenario::begin(ADMIN);
         let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario));
-        
+
         clock::set_for_testing(&mut clock, 1000000);
-        
+
         // Initialize
         {
             simple_art_nft::init_for_testing(test_scenario::ctx(&mut scenario));
         };
-        
+
         // Create collection
         test_scenario::next_tx(&mut scenario, ADMIN);
         {
@@ -662,28 +676,28 @@ module simple_nft_collection::simple_nft_test {
                 test_scenario::ctx(&mut scenario)
             );
         };
-        
+
         // Activate minting
         test_scenario::next_tx(&mut scenario, ADMIN);
         {
             let mut collection = test_scenario::take_shared<Collection>(&scenario);
             let admin_cap = test_scenario::take_from_sender<AdminCap>(&scenario);
-            
+
             simple_art_nft::activate_minting(&mut collection, &admin_cap, test_scenario::ctx(&mut scenario));
-            
+
             // Verify minting is active
             assert!(simple_art_nft::is_mint_active(&collection, &clock), 0);
-            
+
             test_scenario::return_shared(collection);
             test_scenario::return_to_sender(&scenario, admin_cap);
         };
-        
+
         // User mints NFT
         test_scenario::next_tx(&mut scenario, USER);
         {
             let mut collection = test_scenario::take_shared<Collection>(&scenario);
             let payment = coin::mint_for_testing<SUI>(1000000000, test_scenario::ctx(&mut scenario));
-            
+
             simple_art_nft::mint_nft(
                 &mut collection,
                 b"My First NFT",
@@ -693,26 +707,26 @@ module simple_nft_collection::simple_nft_test {
                 &clock,
                 test_scenario::ctx(&mut scenario)
             );
-            
+
             test_scenario::return_shared(collection);
         };
-        
+
         // Verify NFT creation
         test_scenario::next_tx(&mut scenario, USER);
         {
             let nft = test_scenario::take_from_sender<SimpleNFT>(&scenario);
             let (name, description, image_url, creator) = simple_art_nft::get_nft_info(&nft);
-            
+
             assert!(name == std::string::utf8(b"My First NFT"), 0);
             assert!(creator == USER, 1);
-            
+
             // Check dynamic fields
             let edition: &u64 = simple_art_nft::get_dynamic_field(&nft, b"edition_number");
             assert!(*edition == 1, 2);
-            
+
             test_scenario::return_to_sender(&scenario, nft);
         };
-        
+
         clock::destroy_for_testing(clock);
         test_scenario::end(scenario);
     }
@@ -721,17 +735,17 @@ module simple_nft_collection::simple_nft_test {
     fun test_time_based_minting() {
         let mut scenario = test_scenario::begin(ADMIN);
         let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario));
-        
+
         let start_time = 1000000;
         let duration = 24 * 60 * 60 * 1000; // 1 day
-        
+
         clock::set_for_testing(&mut clock, start_time);
-        
+
         // Setup
         {
             simple_art_nft::init_for_testing(test_scenario::ctx(&mut scenario));
         };
-        
+
         test_scenario::next_tx(&mut scenario, ADMIN);
         {
             simple_art_nft::create_collection(
@@ -744,29 +758,29 @@ module simple_nft_collection::simple_nft_test {
                 test_scenario::ctx(&mut scenario)
             );
         };
-        
+
         test_scenario::next_tx(&mut scenario, ADMIN);
         {
             let mut collection = test_scenario::take_shared<Collection>(&scenario);
             let admin_cap = test_scenario::take_from_sender<AdminCap>(&scenario);
-            
+
             simple_art_nft::activate_minting(&mut collection, &admin_cap, test_scenario::ctx(&mut scenario));
             assert!(simple_art_nft::is_mint_active(&collection, &clock), 0);
-            
+
             test_scenario::return_shared(collection);
             test_scenario::return_to_sender(&scenario, admin_cap);
         };
-        
+
         // Fast forward past end time
         clock::set_for_testing(&mut clock, start_time + duration + 1000);
-        
+
         test_scenario::next_tx(&mut scenario, USER);
         {
             let collection = test_scenario::take_shared<Collection>(&scenario);
             assert!(!simple_art_nft::is_mint_active(&collection, &clock), 0);
             test_scenario::return_shared(collection);
         };
-        
+
         clock::destroy_for_testing(clock);
         test_scenario::end(scenario);
     }
@@ -775,12 +789,12 @@ module simple_nft_collection::simple_nft_test {
     fun test_nft_attributes() {
         let mut scenario = test_scenario::begin(ADMIN);
         let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario));
-        
+
         // Setup and mint NFT
         {
             simple_art_nft::init_for_testing(test_scenario::ctx(&mut scenario));
         };
-        
+
         test_scenario::next_tx(&mut scenario, ADMIN);
         {
             simple_art_nft::create_collection(
@@ -793,14 +807,14 @@ module simple_nft_collection::simple_nft_test {
                 test_scenario::ctx(&mut scenario)
             );
         };
-        
+
         test_scenario::next_tx(&mut scenario, ADMIN);
         {
             let mut collection = test_scenario::take_shared<Collection>(&scenario);
             let admin_cap = test_scenario::take_from_sender<AdminCap>(&scenario);
-            
+
             simple_art_nft::activate_minting(&mut collection, &admin_cap, test_scenario::ctx(&mut scenario));
-            
+
             // Admin mint NFT to self
             simple_art_nft::admin_mint(
                 &mut collection,
@@ -811,29 +825,29 @@ module simple_nft_collection::simple_nft_test {
                 ADMIN,
                 test_scenario::ctx(&mut scenario)
             );
-            
+
             test_scenario::return_shared(collection);
             test_scenario::return_to_sender(&scenario, admin_cap);
         };
-        
+
         // Add attributes
         test_scenario::next_tx(&mut scenario, ADMIN);
         {
             let mut nft = test_scenario::take_from_sender<SimpleNFT>(&scenario);
-            
+
             simple_art_nft::add_attribute(&mut nft, b"Color", b"Blue", test_scenario::ctx(&mut scenario));
             simple_art_nft::add_attribute(&mut nft, b"Rarity", b"Rare", test_scenario::ctx(&mut scenario));
             simple_art_nft::add_dynamic_field(&mut nft, b"special_number", 42u64, test_scenario::ctx(&mut scenario));
-            
+
             let attributes = simple_art_nft::get_nft_attributes(&nft);
             assert!(sui::vec_map::size(attributes) == 2, 0);
-            
+
             let special_number: &u64 = simple_art_nft::get_dynamic_field(&nft, b"special_number");
             assert!(*special_number == 42, 1);
-            
+
             test_scenario::return_to_sender(&scenario, nft);
         };
-        
+
         clock::destroy_for_testing(clock);
         test_scenario::end(scenario);
     }
@@ -873,7 +887,7 @@ sui client call \
   --package <PACKAGE_ID> \
   --module simple_art_nft \
   --function create_collection \
-  --args "\"My Art Collection\"" "\"Simple NFT collection\"" 100 1000000000 604800000 <CLOCK_ID> \
+  --args "\"My Art Collection\"" "\"Simple NFT collection\"" 100 10000000 604800000 <CLOCK_ID> \
   --gas-budget 15000000
 
 # Activate minting
@@ -898,7 +912,9 @@ sui client call \
 # 🌐 Module 4: Building a Simple dApp Frontend (1:30 PM - 4:30 PM)
 
 ## 🎯 Learning Objectives
+
 By the end of this module, you will:
+
 - Build a clean React frontend for NFT minting
 - Handle wallet connections and transactions
 - Display NFT collections and user galleries
@@ -909,13 +925,17 @@ By the end of this module, you will:
 ### TypeScript SDK Integration
 
 ```typescript
-import { SuiClient, SuiClientProvider } from '@mysten/sui.js/client';
-import { WalletProvider, useCurrentAccount, useSignAndExecuteTransactionBlock } from '@mysten/wallet-adapter-react';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
+import { SuiClient, SuiClientProvider } from "@mysten/sui.js/client";
+import {
+  WalletProvider,
+  useCurrentAccount,
+  useSignAndExecuteTransactionBlock,
+} from "@mysten/wallet-adapter-react";
+import { TransactionBlock } from "@mysten/sui.js/transactions";
 
 // Simple client setup
 const suiClient = new SuiClient({
-  url: 'https://fullnode.testnet.sui.io:443',
+  url: "https://fullnode.testnet.sui.io:443",
 });
 ```
 
@@ -925,8 +945,9 @@ const suiClient = new SuiClient({
 // Simple wallet connection hook
 function useWallet() {
   const account = useCurrentAccount();
-  const { mutateAsync: signAndExecuteTransactionBlock } = useSignAndExecuteTransactionBlock();
-  
+  const { mutateAsync: signAndExecuteTransactionBlock } =
+    useSignAndExecuteTransactionBlock();
+
   return {
     account,
     isConnected: !!account,
@@ -948,7 +969,7 @@ function createMintTransaction(
   paymentCoinId: string
 ): TransactionBlock {
   const txb = new TransactionBlock();
-  
+
   txb.moveCall({
     target: `${packageId}::simple_art_nft::mint_nft`,
     arguments: [
@@ -957,10 +978,10 @@ function createMintTransaction(
       txb.pure(description),
       txb.pure(imageUrl),
       txb.object(paymentCoinId),
-      txb.object('0x6'), // Clock
+      txb.object("0x6"), // Clock
     ],
   });
-  
+
   return txb;
 }
 ```
@@ -971,743 +992,970 @@ function createMintTransaction(
 
 ```bash
 # Create React app
-npx create-react-app simple-nft-dapp --template typescript
-cd simple-nft-dapp
+bun create @mysten/dapp --template react-client-dapp
+√ What is the name of your dApp? (this will be used as the directory name) · simple-nft-dapp
 
-# Install dependencies
-npm install @mysten/sui.js @mysten/wallet-adapter-react @mysten/wallet-adapter-wallet-standard @tanstack/react-query
-npm install lucide-react clsx tailwind-merge
-npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
+bun add tailwindcss @tailwindcss/vite react-hot-toast pinata
+bun add -D @types/node
+```
+
+replace `tsconfig.json`
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "useDefineForClassFields": true,
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src"],
+  "references": [{ "path": "./tsconfig.node.json" }]
+}
+```
+
+replace `tsconfig.node.json`
+
+```json
+{
+  "compilerOptions": {
+    "composite": true,
+    "skipLibCheck": true,
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["vite.config.mts"]
+}
+```
+
+replace `vite.config.mts`
+
+```mts
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
+import tailwindcss from "@tailwindcss/vite";
+import path from "node:path";
+
+// https://vitejs.dev/config/
+export default defineConfig({
+  plugins: [tailwindcss(), react()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+});
+```
+add `src/index.css`
+```css
+@import "tailwindcss";
+```
+
+add shadcn
+```bash
+bunx shadcn@latest add card button badge input select dialog
+? You need to create a components.json file to add components. Proceed? » (Y/n) Y
 ```
 
 ### Step 2: Setup Constants
 
-Create `src/constants.ts`:
+Replace `networkConfig.ts`
 
-```typescript
-export const CONTRACT_CONSTANTS = {
-  PACKAGE_ID: '0x_YOUR_PACKAGE_ID_HERE',
-  COLLECTION_ID: '0x_YOUR_COLLECTION_ID_HERE',
-  CLOCK_ID: '0x6',
-  MODULE_NAME: 'simple_art_nft',
-} as const;
+```ts
+import { getFullnodeUrl } from "@mysten/sui/client";
+import { createNetworkConfig } from "@mysten/dapp-kit";
 
-export const NETWORK = 'testnet';
+const { networkConfig, useNetworkVariable, useNetworkVariables } =
+  createNetworkConfig({
+    devnet: {
+      url: getFullnodeUrl("devnet"),
+      variables: {
+        // TODO: Update with your deployed contract address
+        simpleArtNFT: "0x0",
+        collectionId: "0x0",
+      },
+    },
+    testnet: {
+      url: getFullnodeUrl("testnet"),
+      variables: {
+        // replacce with your deployed contract address
+        simpleArtNFT:
+          "0x2f29e18b0894ca8bdad6cb069751d647590e221baf3a630a6760be7b4f6c697c",
+        // replacce with your collection id
+        collectionId:
+          "0x6d22771bec18c7f73c1ace52867bb259fef00d00a413f31c45e3f4c1b4148e5c",
+      },
+    },
+    mainnet: {
+      url: getFullnodeUrl("mainnet"),
+      variables: {
+        // TODO: Update with your deployed contract address
+        simpleArtNFT: "0x0",
+        collectionId: "0x0",
+      },
+    },
+  });
 
-export interface NFTData {
-  name: string;
-  description: string;
-  image_url: string;
-  creator: string;
-}
-
-export interface CollectionData {
-  name: string;
-  description: string;
-  creator: string;
-  total_supply: number;
-  max_supply: number;
-  mint_price: number;
-  is_active: boolean;
-  mint_start_time: number;
-  mint_end_time: number;
-}
+export { useNetworkVariable, useNetworkVariables, networkConfig };
 ```
 
-### Step 3: Create Sui Service
+Replace `main.tsx`
 
-Create `src/services/suiService.ts`:
+```ts
+import React from "react";
+import ReactDOM from "react-dom/client";
+import "@mysten/dapp-kit/dist/index.css";
+import "./index.css";
+import { Toaster } from "react-hot-toast";
 
-```typescript
-import { SuiClient } from '@mysten/sui.js/client';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
-import { CONTRACT_CONSTANTS, NFTData, CollectionData } from '../constants';
-
-export class SuiService {
-  constructor(private client: SuiClient) {}
-
-  async getCollectionInfo(collectionId: string): Promise<CollectionData | null> {
-    try {
-      const response = await this.client.getObject({
-        id: collectionId,
-        options: { showContent: true },
-      });
-
-      if (response.data?.content && 'fields' in response.data.content) {
-        const fields = response.data.content.fields as any;
-        return {
-          name: fields.name,
-          description: fields.description,
-          creator: fields.creator,
-          total_supply: parseInt(fields.total_supply),
-          max_supply: parseInt(fields.max_supply),
-          mint_price: parseInt(fields.mint_price),
-          is_active: fields.is_active,
-          mint_start_time: parseInt(fields.mint_start_time),
-          mint_end_time: parseInt(fields.mint_end_time),
-        };
-      }
-      return null;
-    } catch (error) {
-      console.error('Error fetching collection:', error);
-      return null;
-    }
-  }
-
-  async getUserNFTs(address: string): Promise<any[]> {
-    try {
-      const response = await this.client.getOwnedObjects({
-        owner: address,
-        filter: {
-          StructType: `${CONTRACT_CONSTANTS.PACKAGE_ID}::simple_art_nft::SimpleNFT`,
-        },
-        options: {
-          showContent: true,
-          showDisplay: true,
-        },
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching NFTs:', error);
-      return [];
-    }
-  }
-
-  async getUserCoins(address: string): Promise<any[]> {
-    try {
-      const response = await this.client.getCoins({
-        owner: address,
-        coinType: '0x2::sui::SUI',
-      });
-      return response.data;
-    } catch (error) {
-      console.error('Error fetching coins:', error);
-      return [];
-    }
-  }
-
-  createMintTransaction(
-    name: string,
-    description: string,
-    imageUrl: string,
-    paymentCoinId: string
-  ): TransactionBlock {
-    const txb = new TransactionBlock();
-    
-    txb.moveCall({
-      target: `${CONTRACT_CONSTANTS.PACKAGE_ID}::${CONTRACT_CONSTANTS.MODULE_NAME}::mint_nft`,
-      arguments: [
-        txb.object(CONTRACT_CONSTANTS.COLLECTION_ID),
-        txb.pure(name),
-        txb.pure(description),
-        txb.pure(imageUrl),
-        txb.object(paymentCoinId),
-        txb.object(CONTRACT_CONSTANTS.CLOCK_ID),
-      ],
-    });
-
-    return txb;
-  }
-
-  formatSUI(amount: number): string {
-    return (amount / 1_000_000_000).toFixed(2);
-  }
-
-  formatTimeRemaining(endTime: number): string {
-    const now = Date.now();
-    const remaining = endTime - now;
-    
-    if (remaining <= 0) return 'Ended';
-    
-    const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    
-    if (days > 0) return `${days}d ${hours}h remaining`;
-    if (hours > 0) return `${hours}h remaining`;
-    return 'Less than 1h remaining';
-  }
-}
-```
-
-### Step 4: Create Main App Component
-
-Update `src/App.tsx`:
-
-```typescript
-import React from 'react';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { SuiClientProvider } from '@mysten/sui.js/client';
-import { WalletProvider } from '@mysten/wallet-adapter-react';
-import { WalletStandardAdapterProvider } from '@mysten/wallet-adapter-wallet-standard';
-import NFTMintingApp from './components/NFTMintingApp';
-import './index.css';
-
-const suiClient = new SuiClient({
-  url: 'https://fullnode.testnet.sui.io:443',
-});
+import { SuiClientProvider, WalletProvider } from "@mysten/dapp-kit";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import App from "./App.tsx";
+import { networkConfig } from "./networkConfig.ts";
 
 const queryClient = new QueryClient();
 
-function App() {
-  return (
+ReactDOM.createRoot(document.getElementById("root")!).render(
+  <React.StrictMode>
     <QueryClientProvider client={queryClient}>
-      <SuiClientProvider client={suiClient}>
-        <WalletStandardAdapterProvider>
-          <WalletProvider>
-            <NFTMintingApp />
-          </WalletProvider>
-        </WalletStandardAdapterProvider>
+      <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
+        <WalletProvider autoConnect>
+          <Toaster />
+          <App />
+        </WalletProvider>
       </SuiClientProvider>
     </QueryClientProvider>
+  </React.StrictMode>
+);
+```
+
+Create Pinata Service on `src/service/pinata.ts`
+
+```ts
+import { PinataSDK } from "pinata";
+
+export const pinata = new PinataSDK({
+  pinataJwt: import.meta.env.VITE_PINATA_JWT,
+  pinataGateway: import.meta.env.VITE_PINATA_GATEWAY,
+});
+```
+
+Setup `.env` you can get the key from https://docs.pinata.cloud/quickstart
+
+```ts
+VITE_PINATA_API_KEY = "";
+VITE_PINATA_API_SECRET = "";
+VITE_PINATA_JWT = "";
+VITE_PINATA_GATEWAY = "";
+```
+
+### Step 3: Create Sui Hooks
+
+create `src/hooks/use-create-mint-transaction.ts`
+
+```ts
+import { Transaction } from "@mysten/sui/transactions";
+import { useNetworkVariable } from "../networkConfig";
+import {
+  useCurrentAccount,
+  useSignAndExecuteTransaction,
+  useSuiClient,
+  useSuiClientQuery,
+} from "@mysten/dapp-kit";
+import { pinata } from "@/service/pinata";
+import toast from "react-hot-toast";
+import { useMutation } from "@tanstack/react-query";
+import { formatSUI } from "@/lib/utils";
+
+export type CreateMintTransactionDto = {
+  name: string;
+  description: string;
+  imageFile: File | null;
+  collectionId: string;
+};
+
+export function useCreateMintTransaction() {
+  const queryClient = useQueryClient();
+  const account = useCurrentAccount();
+  const simpleArtNFT = useNetworkVariable("simpleArtNFT");
+  const suiClient = useSuiClient();
+  const txQuery = useSignAndExecuteTransaction();
+  const coinQuery = useSuiClientQuery(
+    "getCoins",
+    {
+      owner: account?.address!,
+      coinType: "0x2::sui::SUI",
+    },
+    { enabled: account !== null }
+  );
+
+  const query = useMutation({
+    onError: (error) => {
+      toast.error((error as Error).message, { id: "mint-nft" });
+    },
+    mutationKey: ["createMintTransaction", coinQuery.data?.data, account],
+    mutationFn: async ([dto, requiredAmount, onSucces]: [
+      dto: CreateMintTransactionDto,
+      requiredAmount: number,
+      onSucces: () => unknown
+    ]) => {
+      if (!account) return;
+      if (!dto.imageFile) return;
+
+      const suitableCoin = coinQuery.data?.data.find(
+        (x) => +x.balance > requiredAmount
+      );
+      if (!suitableCoin) {
+        throw new Error(
+          `Insufficient SUI balance. Need ${formatSUI(requiredAmount)} SUI`
+        );
+      }
+
+      toast.loading("Uploading Image...", { id: "mint-nft" });
+      const response = await pinata.upload.public.file(dto.imageFile);
+      const link = `https://${import.meta.env.VITE_PINATA_GATEWAY}/ipfs/${
+        response.cid
+      }`;
+
+      const tx = new Transaction();
+
+      const [mintCoin] = tx.splitCoins(tx.gas, [requiredAmount]);
+
+      tx.moveCall({
+        target: `${simpleArtNFT}::simple_art_nft::mint_nft`,
+        arguments: [
+          tx.object(dto.collectionId),
+          tx.pure("string", dto.name),
+          tx.pure("string", dto.description),
+          tx.pure("string", link),
+          mintCoin,
+          tx.object("0x6"),
+        ],
+      });
+
+      toast.loading("Sending Transaction...", { id: "mint-nft" });
+      const { digest } = await txQuery.mutateAsync({ transaction: tx });
+      const { effects } = await suiClient.waitForTransaction({
+        digest,
+        options: {
+          showEffects: true,
+        },
+      });
+      onSucces();
+      console.log(effects?.created?.[0].reference.objectId);
+      toast.success("Mint Success", { id: "mint-nft" });
+      queryClient.refetchQueries({ queryKey: ["getUserNFT"] });
+    },
+  });
+
+  return query;
+}
+```
+
+create `src/hooks/use-get-collection-info.ts`
+
+```ts
+import { useSuiClientQuery } from "@mysten/dapp-kit";
+import { useMemo } from "react";
+
+export type CollectionInfo = {
+  name: string;
+  description: string;
+  creator: string;
+  totalSupply: number;
+  maxSupply: number;
+  mintPrice: number;
+  isActive: boolean;
+  mintStartTime: number;
+  mintEndTime: number;
+};
+
+export function useGetCollectionInfo(collectionId: string) {
+  const { data, ...rest } = useSuiClientQuery("getObject", {
+    id: collectionId,
+    options: { showContent: true, showOwner: true },
+  });
+
+  const parsed = useMemo(() => {
+    if (data?.data?.content?.dataType != "moveObject") return null;
+    const fields = data.data.content.fields;
+
+    return {
+      name: Reflect.get(fields, "name"),
+      description: Reflect.get(fields, "description"),
+      creator: Reflect.get(fields, "creator"),
+      totalSupply: parseInt(Reflect.get(fields, "total_supply")),
+      maxSupply: parseInt(Reflect.get(fields, "max_supply")),
+      mintPrice: parseInt(Reflect.get(fields, "mint_price")),
+      isActive: Reflect.get(fields, "is_active"),
+      mintStartTime: parseInt(Reflect.get(fields, "mint_start_time")),
+      mintEndTime: parseInt(Reflect.get(fields, "mint_end_time")),
+    } as CollectionInfo;
+  }, [data?.data]);
+
+  return [parsed, rest] as const;
+}
+```
+
+create `src/hooks/use-get-user-nft.ts`
+
+```ts
+import { useCurrentAccount, useSuiClientQuery } from "@mysten/dapp-kit";
+import { useMemo } from "react";
+import { useNetworkVariable } from "../networkConfig";
+
+export function useGetUserNFT() {
+  const account = useCurrentAccount();
+  const simpleArtNFT = useNetworkVariable("simpleArtNFT");
+  const { data, ...rest } = useSuiClientQuery(
+    "getOwnedObjects",
+    {
+      owner: account?.address!,
+      filter: {
+        StructType: `${simpleArtNFT}::simple_art_nft::SimpleNFT`,
+      },
+      options: { showContent: true, showOwner: true },
+    },
+    {
+      enabled: account !== null,
+      queryKey: ["getUserNFT"],
+      refetchInterval: 10_000,
+    },
+  );
+
+  const parsed = useMemo(() => {
+    return data?.data;
+  }, [data?.data]);
+
+  return [parsed, rest] as const;
+}
+```
+
+
+### Step 4: Create Main NFT App Component
+
+Create `src/components/mint-section.tsx`:
+
+```tsx
+import {
+  CreateMintTransactionDto,
+  useCreateMintTransaction,
+} from "@/hooks/use-create-mint-transaction";
+import { useState } from "react";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { CollectionInfo } from "@/hooks/use-get-collection-info";
+import { Dialog, DialogContent, DialogTrigger } from "./ui/dialog";
+import { formatSUI } from "@/lib/utils";
+
+function MintForm({
+  collectionId,
+  mintPrice,
+}: {
+  collectionId: string;
+  mintPrice: number;
+}) {
+  const { isPending: isLoading, mutate } = useCreateMintTransaction();
+  const [formData, setFormData] = useState<CreateMintTransactionDto>({
+    name: "",
+    description: "",
+    imageFile: null as never,
+    collectionId: collectionId,
+  });
+  const [errors, setErrors] = useState<
+    Partial<Record<keyof CreateMintTransactionDto, string>>
+  >({});
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  const validateForm = (): boolean => {
+    const newErrors: Partial<Record<keyof CreateMintTransactionDto, string>> =
+      {};
+
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
+    } else if (formData.name.length < 3) {
+      newErrors.name = "Name must be at least 3 characters";
+    }
+
+    if (!formData.description.trim()) {
+      newErrors.description = "Description is required";
+    } else if (formData.description.length < 10) {
+      newErrors.description = "Description must be at least 10 characters";
+    }
+
+    if (!formData.imageFile) {
+      newErrors.imageFile = "Image file is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith("image/")) {
+        setErrors((prev) => ({
+          ...prev,
+          imageFile: "Please select a valid image file",
+        }));
+        return;
+      }
+
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        setErrors((prev) => ({
+          ...prev,
+          imageFile: "File size must be less than 10MB",
+        }));
+        return;
+      }
+
+      setFormData((prev) => ({ ...prev, imageFile: file }));
+
+      // Create preview
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setImagePreview(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      // Clear error
+      if (errors.imageFile) {
+        setErrors((prev) => ({ ...prev, imageFile: undefined }));
+      }
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!validateForm()) {
+      return;
+    }
+
+    mutate([
+      formData,
+      mintPrice,
+      () => {
+        // Reset form on success
+        setFormData({
+          name: "",
+          description: "",
+          imageFile: null,
+          collectionId: collectionId,
+        });
+        setImagePreview(null);
+      },
+    ]);
+  };
+
+  const handleInputChange = (
+    field: keyof CreateMintTransactionDto,
+    value: string
+  ) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4 flex gap-4">
+      <div className="flex flex-col gap-4">
+        <div>
+          <label
+            htmlFor="name"
+            className="block text-sm font-medium text-[#bac2de] mb-2"
+          >
+            NFT Name *
+          </label>
+          <Input
+            id="name"
+            type="text"
+            placeholder="e.g., Cosmic Cat Supreme"
+            value={formData.name}
+            onChange={(e) => handleInputChange("name", e.target.value)}
+            className={`bg-[#313244] border-[#45475a] text-[#cdd6f4] placeholder:text-[#6c7086] ${
+              errors.name ? "border-[#f38ba8]" : "focus:border-[#cba6f7]"
+            }`}
+          />
+          {errors.name && (
+            <p className="text-[#f38ba8] text-sm mt-1">{errors.name}</p>
+          )}
+        </div>
+
+        <div>
+          <label
+            htmlFor="description"
+            className="block text-sm font-medium text-[#bac2de] mb-2"
+          >
+            Description *
+          </label>
+          <textarea
+            id="description"
+            placeholder="Describe your unique cat's personality and traits..."
+            value={formData.description}
+            onChange={(e) => handleInputChange("description", e.target.value)}
+            rows={3}
+            className={`w-full px-3 py-2 bg-[#313244] border rounded-md text-[#cdd6f4] placeholder:text-[#6c7086] resize-none focus:outline-none focus:ring-2 focus:ring-[#cba6f7]/50 ${
+              errors.description
+                ? "border-[#f38ba8]"
+                : "border-[#45475a] focus:border-[#cba6f7]"
+            }`}
+          />
+          {errors.description && (
+            <p className="text-[#f38ba8] text-sm mt-1">{errors.description}</p>
+          )}
+        </div>
+
+        <div className="bg-[#45475a]/30 rounded-lg p-4 mt-6">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-[#a6adc8]">Total Cost</span>
+            <span className="text-xl font-bold text-[#f9e2af]">
+              {formatSUI(mintPrice)} SUI
+            </span>
+          </div>
+          <div className="flex justify-between items-center text-sm">
+            <span className="text-[#6c7086]">+ Gas fees</span>
+            <span className="text-[#94e2d5]">~0.005 SUI</span>
+          </div>
+        </div>
+
+        <Button
+          id="mint-button"
+          type="submit"
+          disabled={isLoading}
+          className="w-full bg-gradient-to-r from-[#cba6f7] to-[#f38ba8] hover:from-[#b4a0e8] hover:to-[#f27a9a] text-[#11111b] font-semibold py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isLoading ? (
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 border-2 border-[#11111b]/30 border-t-[#11111b] rounded-full animate-spin"></div>
+              Minting...
+            </div>
+          ) : (
+            `Mint NFT for ${formatSUI(mintPrice)} SUI`
+          )}
+        </Button>
+      </div>
+
+      <div>
+        <label
+          htmlFor="imageFile"
+          className="block text-sm font-medium text-[#bac2de] mb-2"
+        >
+          NFT Image *
+        </label>
+        <div className="space-y-3 aspect-[9/16] flex max-h-96">
+          {imagePreview ? (
+            <div className="relative">
+              <img
+                src={imagePreview || "/placeholder.svg"}
+                alt="Preview"
+                className="w-full h-full object-cover rounded-lg border border-[#45475a]"
+              />
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData((prev) => ({ ...prev, imageFile: null }));
+                  setImagePreview(null);
+                }}
+                className="absolute top-2 right-2 w-8 h-8 bg-[#f38ba8] hover:bg-[#f27a9a] text-[#11111b] rounded-full flex items-center justify-center transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+          ) : (
+            <div
+              className={`relative border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
+                errors.imageFile
+                  ? "border-[#f38ba8]"
+                  : "border-[#45475a] hover:border-[#cba6f7]"
+              }`}
+            >
+              <input
+                id="imageFile"
+                type="file"
+                accept="image/*"
+                onChange={handleFileChange}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+              />
+              <div className="space-y-2">
+                <div className="w-12 h-12 mx-auto bg-[#45475a] rounded-lg flex items-center justify-center">
+                  <span className="text-2xl">📁</span>
+                </div>
+                <div>
+                  <p className="text-[#cdd6f4] font-medium">
+                    {formData.imageFile
+                      ? formData.imageFile.name
+                      : "Click to upload image"}
+                  </p>
+                  <p className="text-[#6c7086] text-sm">
+                    PNG, JPG, GIF up to 10MB
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+        {errors.imageFile && (
+          <p className="text-[#f38ba8] text-sm mt-1">{errors.imageFile}</p>
+        )}
+      </div>
+    </form>
+  );
+}
+
+export function MintSection({
+  collectionInfo,
+  id,
+}: {
+  collectionInfo: CollectionInfo;
+  id: string;
+}) {
+  return (
+    <Dialog modal>
+      <DialogTrigger asChild>
+        <Button className="w-full bg-gradient-to-r from-[#cba6f7] to-[#f38ba8] hover:from-[#b4a0e8] hover:to-[#f27a9a] text-[#11111b] font-semibold py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed">
+          Mint
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="bg-[#1e1e2e] min-w-max p-0">
+        {collectionInfo.isActive && (
+          <div className="bg-gradient-to-r from-[#cba6f7]/10 to-[#f38ba8]/10 border border-[#cba6f7]/20 rounded-lg p-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="text-2xl font-semibold text-[#cba6f7] mb-2">
+                  Mint Your NFT
+                </h3>
+                <p className="text-[#bac2de] mb-4">
+                  Create your unique NFT with custom traits and personality
+                </p>
+                <div className="mb-4">
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="text-[#a6adc8]">Minting Progress</span>
+                    <span className="text-[#cba6f7]">
+                      {collectionInfo.totalSupply.toLocaleString()}/
+                      {collectionInfo.maxSupply.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="w-full bg-[#45475a] rounded-full h-3">
+                    <div
+                      className="bg-gradient-to-r from-[#cba6f7] to-[#f38ba8] h-3 rounded-full transition-all duration-300"
+                      style={{
+                        width: `${
+                          (collectionInfo.totalSupply /
+                            collectionInfo.maxSupply) *
+                          100
+                        }%`,
+                      }}
+                    ></div>
+                  </div>
+                  <p className="text-[#6c7086] text-sm mt-1">
+                    {(
+                      ((collectionInfo.maxSupply - collectionInfo.totalSupply) /
+                        collectionInfo.maxSupply) *
+                      100
+                    ).toFixed(1)}
+                    % remaining
+                  </p>
+                </div>
+                <div className="bg-[#313244] rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-[#a6adc8]">Mint Price</span>
+                    <span className="text-2xl font-bold text-[#f9e2af]">
+                      {formatSUI(collectionInfo.mintPrice)} SUI
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-[#6c7086]">Gas Fee (estimated)</span>
+                    <span className="text-[#94e2d5]">~0.005 SUI</span>
+                  </div>
+                </div>
+              </div>
+
+              <MintForm
+                collectionId={id}
+                mintPrice={collectionInfo.mintPrice}
+              />
+            </div>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+```
+
+Create `src/components/nft-grid.tsx`
+
+```tsx
+import { useGetUserNFT } from "@/hooks/use-get-user-nft";
+import { Card, CardContent } from "./ui/card";
+import { Eye, Heart } from "lucide-react";
+
+export function NFTGrid() {
+  const [data] = useGetUserNFT();
+  return (
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        {data &&
+          data.map((nft, index) => {
+            const content = nft.data?.content;
+            // @ts-expect-error there is
+            const fields = content?.fields;
+            return (
+              <Card
+                key={nft.data?.objectId || index}
+                className="bg-[#313244] border-[#45475a] hover:border-[#cba6f7] transition-all duration-300 cursor-pointer group"
+              >
+                <CardContent className="p-0">
+                  <div className="relative overflow-hidden rounded-t-lg">
+                    <img
+                      src={fields?.image_url || "/placeholder.png"}
+                      alt={fields?.name || "NFT"}
+                      onError={(e) => {
+                        e.currentTarget.src = "/placeholder.png";
+                      }}
+                      className="w-full h-64 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute top-3 right-3"></div>
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-[#cdd6f4] mb-2">
+                      {fields?.name || "Unnamed NFT"}
+                    </h3>
+                    <h4 className="font-semibold text-[#cdd6f4] mb-2">
+                      {fields?.description || "No description"}
+                    </h4>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1 text-[#f38ba8]">
+                        <Heart className="w-4 h-4" />
+                        <span className="text-sm">
+                          {Math.random().toFixed(2)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
+      </div>
+
+      {data?.length === 0 && (
+        <div className="text-center py-12">
+          <Eye className="w-12 h-12 text-[#6c7086] mx-auto mb-4" />
+          <h3 className="text-xl font-semibold text-[#bac2de] mb-2">
+            No NFTs found
+          </h3>
+          <p className="text-[#a6adc8]">
+            Try adjusting your search or filter criteria
+          </p>
+        </div>
+      )}
+    </>
+  );
+}
+```
+
+Add some utils function in `lib/utils.ts`
+
+```ts
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+
+export function formatTimeRemaining(endTime: number): string {
+  const now = Date.now();
+  const remaining = endTime - now;
+
+  if (remaining <= 0) return "Ended";
+
+  const days = Math.floor(remaining / (1000 * 60 * 60 * 24));
+  const hours = Math.floor(
+    (remaining % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+  );
+
+  if (days > 0) return `${days}d ${hours}h remaining`;
+  if (hours > 0) return `${hours}h remaining`;
+  return "Less than 1h remaining";
+}
+
+export function formatSUI(amount: number): string {
+  return (amount / 1_000_000_000).toFixed(2);
+}
+```
+
+replace `src/App.tsx`
+
+```tsx
+import { ConnectButton } from "@mysten/dapp-kit";
+import { useGetCollectionInfo } from "./hooks/use-get-collection-info";
+import { Badge } from "@/components/ui/badge";
+import { TrendingUp, Users, Zap, Eye } from "lucide-react";
+import { useNetworkVariable } from "./networkConfig";
+import { MintSection } from "./components/mint-section";
+import { NFTGrid } from "./components/nft-grid";
+import { formatSUI } from "./lib/utils";
+
+export function App() {
+  const collectionID = useNetworkVariable("collectionId");
+  const [collectionInfo] = useGetCollectionInfo(collectionID);
+
+  if (!collectionInfo) return <div>NOT FOUND</div>;
+
+  return (
+    <div className="min-h-screen bg-[#1e1e2e] text-[#cdd6f4]">
+      <div className="bg-[#181825] border-b border-[#313244]">
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          <div className="flex flex-col md:flex-row items-start gap-6">
+            <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-[#cba6f7] to-[#f38ba8] flex justify-center">
+              <span className="text-2xl font-bold text-[#11111b]"></span>
+            </div>
+
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-[#cba6f7] to-[#f38ba8] bg-clip-text text-transparent">
+                  {collectionInfo.name}
+                </h1>
+                {collectionInfo.isActive && (
+                  <Badge className="bg-[#a6e3a1] text-[#11111b] animate-pulse">
+                    Live Mint
+                  </Badge>
+                )}
+              </div>
+              <p className="text-[#bac2de] mb-2">
+                Created by{" "}
+                <span className="text-[#89b4fa] font-semibold">
+                  {collectionInfo.creator}
+                </span>
+              </p>
+              <p className="text-[#bac2de] mb-4 max-w-2xl">
+                {collectionInfo.description}
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-4">
+                <div className="flex items-center gap-2 bg-[#313244] px-3 py-2 rounded-lg">
+                  <TrendingUp className="w-4 h-4 text-[#a6e3a1]" />
+                  <div className="text-sm">
+                    <div className="text-[#6c7086]">Floor</div>
+                    <div className="font-semibold">1.2 SUI</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 bg-[#313244] px-3 py-2 rounded-lg">
+                  <Users className="w-4 h-4 text-[#89b4fa]" />
+                  <div className="text-sm">
+                    <div className="text-[#6c7086]">Owners</div>
+                    <div className="font-semibold">3,247</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 bg-[#313244] px-3 py-2 rounded-lg">
+                  <Zap className="w-4 h-4 text-[#f9e2af]" />
+                  <div className="text-sm">
+                    <div className="text-[#6c7086]">Volume</div>
+                    <div className="font-semibold">1,234 SUI</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 bg-[#313244] px-3 py-2 rounded-lg">
+                  <Eye className="w-4 h-4 text-[#fab387]" />
+                  <div className="text-sm">
+                    <div className="text-[#6c7086]">Supply</div>
+                    <div className="font-semibold">
+                      {collectionInfo.totalSupply.toLocaleString()}/
+                      {collectionInfo.maxSupply.toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 bg-[#313244] px-3 py-2 rounded-lg">
+                  <span className="w-4 h-4 text-[#f38ba8]">💎</span>
+                  <div className="text-sm">
+                    <div className="text-[#6c7086]">Mint Price</div>
+                    <div className="font-semibold">
+                      {formatSUI(collectionInfo.mintPrice)} SUI
+                    </div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 bg-[#313244] px-3 py-2 rounded-lg">
+                  <span className="w-4 h-4 text-[#94e2d5]">⏰</span>
+                  <div className="text-sm">
+                    <div className="text-[#6c7086]">Status</div>
+                    <div className="font-semibold text-[#a6e3a1]">
+                      {collectionInfo.isActive ? "Minting" : "Sold Out"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <MintSection id={collectionID} collectionInfo={collectionInfo} />
+            </div>
+            <div className="self-end">
+              <ConnectButton />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Filters */}
+      <div className="mx-auto px-4 py-6">
+        <NFTGrid />
+      </div>
+    </div>
   );
 }
 
 export default App;
 ```
 
-### Step 5: Create Main NFT App Component
+replace `index.html`
 
-Create `src/components/NFTMintingApp.tsx`:
-
-```typescript
-import React, { useState, useEffect } from 'react';
-import { useCurrentAccount, useSignAndExecuteTransactionBlock } from '@mysten/wallet-adapter-react';
-import { useSuiClient } from '@mysten/sui.js/client';
-import WalletConnection from './WalletConnection';
-import CollectionInfo from './CollectionInfo';
-import MintingForm from './MintingForm';
-import NFTGallery from './NFTGallery';
-import { SuiService } from '../services/suiService';
-import { CONTRACT_CONSTANTS, CollectionData } from '../constants';
-
-const NFTMintingApp: React.FC = () => {
-  const account = useCurrentAccount();
-  const client = useSuiClient();
-  const { mutateAsync: signAndExecuteTransactionBlock } = useSignAndExecuteTransactionBlock();
-  
-  const [suiService] = useState(() => new SuiService(client));
-  const [collectionData, setCollectionData] = useState<CollectionData | null>(null);
-  const [userCoins, setUserCoins] = useState<any[]>([]);
-  const [userNFTs, setUserNFTs] = useState<any[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [txStatus, setTxStatus] = useState<{
-    type: 'success' | 'error' | 'pending' | null;
-    message: string;
-    txHash?: string;
-  }>({ type: null, message: '' });
-
-  useEffect(() => {
-    loadCollectionData();
-  }, []);
-
-  useEffect(() => {
-    if (account?.address) {
-      loadUserData();
-    }
-  }, [account?.address]);
-
-  const loadCollectionData = async () => {
-    try {
-      const data = await suiService.getCollectionInfo(CONTRACT_CONSTANTS.COLLECTION_ID);
-      setCollectionData(data);
-    } catch (error) {
-      console.error('Failed to load collection:', error);
-    }
-  };
-
-  const loadUserData = async () => {
-    if (!account?.address) return;
-    
-    try {
-      const [coins, nfts] = await Promise.all([
-        suiService.getUserCoins(account.address),
-        suiService.getUserNFTs(account.address),
-      ]);
-      setUserCoins(coins);
-      setUserNFTs(nfts);
-    } catch (error) {
-      console.error('Failed to load user data:', error);
-    }
-  };
-
-  const handleMint = async (name: string, description: string, imageUrl: string) => {
-    if (!account?.address || !collectionData) return;
-
-    setLoading(true);
-    setTxStatus({ type: 'pending', message: 'Preparing transaction...' });
-
-    try {
-      const requiredAmount = collectionData.mint_price;
-      const suitableCoin = userCoins.find(coin => parseInt(coin.balance) >= requiredAmount);
-
-      if (!suitableCoin) {
-        throw new Error(`Insufficient SUI balance. Need ${suiService.formatSUI(requiredAmount)} SUI`);
-      }
-
-      const txb = suiService.createMintTransaction(name, description, imageUrl, suitableCoin.coinObjectId);
-
-      setTxStatus({ type: 'pending', message: 'Waiting for wallet confirmation...' });
-
-      const result = await signAndExecuteTransactionBlock({
-        transactionBlock: txb,
-        options: { showEffects: true },
-      });
-
-      setTxStatus({
-        type: 'success',
-        message: 'NFT minted successfully!',
-        txHash: result.digest,
-      });
-
-      await Promise.all([loadUserData(), loadCollectionData()]);
-
-    } catch (error: any) {
-      setTxStatus({
-        type: 'error',
-        message: error.message || 'Failed to mint NFT',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
-      <div className="container mx-auto px-4 py-8">
-        <header className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            🎨 Simple NFT Minting dApp
-          </h1>
-          <p className="text-lg text-gray-600 mb-8">
-            Mint your unique NFTs with time-based features and dynamic metadata
-          </p>
-          <WalletConnection />
-        </header>
-
-        {txStatus.type && (
-          <div className={`max-w-md mx-auto mb-6 p-4 rounded-lg ${
-            txStatus.type === 'success' ? 'bg-green-100 text-green-800' :
-            txStatus.type === 'error' ? 'bg-red-100 text-red-800' :
-            'bg-blue-100 text-blue-800'
-          }`}>
-            <p>{txStatus.message}</p>
-            {txStatus.txHash && (
-              <a
-                href={`https://suiscan.xyz/testnet/tx/${txStatus.txHash}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm underline"
-              >
-                View on Explorer
-              </a>
-            )}
-            <button
-              onClick={() => setTxStatus({ type: null, message: '' })}
-              className="ml-4 text-sm underline"
-            >
-              Dismiss
-            </button>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-6">
-            <CollectionInfo 
-              collectionData={collectionData} 
-              suiService={suiService}
-            />
-            
-            {account && collectionData && (
-              <MintingForm
-                onMint={handleMint}
-                loading={loading}
-                userCoins={userCoins}
-                mintPrice={collectionData.mint_price}
-                suiService={suiService}
-              />
-            )}
-          </div>
-
-          <div>
-            {account && (
-              <NFTGallery 
-                nfts={userNFTs} 
-                loading={loading}
-                onRefresh={loadUserData}
-              />
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-export default NFTMintingApp;
+```html
+<!doctype html>
+<html lang="en" class="dark-theme" style="color-scheme: dark">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sui dApp Starter</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
 ```
 
-### Step 6: Create Supporting Components
-
-Create `src/components/WalletConnection.tsx`:
-
-```typescript
-import React from 'react';
-import { ConnectButton, useCurrentAccount } from '@mysten/wallet-adapter-react';
-import { Wallet } from 'lucide-react';
-
-const WalletConnection: React.FC = () => {
-  const account = useCurrentAccount();
-
-  if (account) {
-    return (
-      <div className="bg-white rounded-lg shadow p-4 max-w-sm mx-auto">
-        <div className="flex items-center space-x-3">
-          <Wallet className="w-5 h-5 text-green-600" />
-          <div>
-            <p className="text-sm text-gray-500">Connected</p>
-            <p className="font-mono text-sm">
-              {account.address.slice(0, 6)}...{account.address.slice(-4)}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="bg-white rounded-lg shadow p-6 max-w-sm mx-auto text-center">
-      <Wallet className="w-8 h-8 text-gray-400 mx-auto mb-4" />
-      <h3 className="text-lg font-semibold mb-2">Connect Wallet</h3>
-      <p className="text-gray-600 mb-4">Connect to start minting NFTs</p>
-      <ConnectButton className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg" />
-    </div>
-  );
-};
-
-export default WalletConnection;
-```
-
-Create `src/components/CollectionInfo.tsx`:
-
-```typescript
-import React from 'react';
-import { CollectionData, SuiService } from '../types';
-import { Clock, Users, Coins } from 'lucide-react';
-
-interface Props {
-  collectionData: CollectionData | null;
-  suiService: SuiService;
-}
-
-const CollectionInfo: React.FC<Props> = ({ collectionData, suiService }) => {
-  if (!collectionData) {
-    return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <div className="animate-pulse space-y-4">
-          <div className="h-6 bg-gray-200 rounded"></div>
-          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
-        </div>
-      </div>
-    );
-  }
-
-  const progress = (collectionData.total_supply / collectionData.max_supply) * 100;
-
-  return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-bold mb-4">{collectionData.name}</h2>
-      <p className="text-gray-600 mb-6">{collectionData.description}</p>
-
-      <div className="grid grid-cols-2 gap-4 mb-6">
-        <div className="bg-gray-50 p-3 rounded">
-          <div className="flex items-center mb-2">
-            <Users className="w-4 h-4 text-gray-500 mr-2" />
-            <span className="text-sm text-gray-600">Supply</span>
-          </div>
-          <p className="text-lg font-bold">
-            {collectionData.total_supply}/{collectionData.max_supply}
-          </p>
-        </div>
-
-        <div className="bg-gray-50 p-3 rounded">
-          <div className="flex items-center mb-2">
-            <Coins className="w-4 h-4 text-gray-500 mr-2" />
-            <span className="text-sm text-gray-600">Price</span>
-          </div>
-          <p className="text-lg font-bold">
-            {suiService.formatSUI(collectionData.mint_price)} SUI
-          </p>
-        </div>
-      </div>
-
-      <div className="mb-4">
-        <div className="flex justify-between text-sm mb-2">
-          <span>Progress</span>
-          <span>{progress.toFixed(1)}%</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div
-            className="bg-blue-600 h-2 rounded-full"
-            style={{ width: `${progress}%` }}
-          ></div>
-        </div>
-      </div>
-
-      <div className="flex items-center text-sm">
-        <Clock className="w-4 h-4 mr-2" />
-        <span className={collectionData.is_active ? 'text-green-600' : 'text-red-600'}>
-          {collectionData.is_active ? 'Minting Active' : 'Minting Inactive'}
-        </span>
-      </div>
-
-      {collectionData.is_active && (
-        <p className="text-sm text-gray-500 mt-2">
-          {suiService.formatTimeRemaining(collectionData.mint_end_time)}
-        </p>
-      )}
-    </div>
-  );
-};
-
-export default CollectionInfo;
-```
-
-Create `src/components/MintingForm.tsx`:
-
-```typescript
-import React, { useState } from 'react';
-import { SuiService } from '../services/suiService';
-import { Palette, Loader2 } from 'lucide-react';
-
-interface Props {
-  onMint: (name: string, description: string, imageUrl: string) => Promise<void>;
-  loading: boolean;
-  userCoins: any[];
-  mintPrice: number;
-  suiService: SuiService;
-}
-
-const MintingForm: React.FC<Props> = ({
-  onMint,
-  loading,
-  userCoins,
-  mintPrice,
-  suiService,
-}) => {
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    imageUrl: '',
-  });
-
-  const totalBalance = userCoins.reduce((sum, coin) => sum + parseInt(coin.balance), 0);
-  const hasEnoughBalance = totalBalance >= mintPrice;
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!formData.name || !formData.description || !formData.imageUrl) return;
-    
-    await onMint(formData.name, formData.description, formData.imageUrl);
-    setFormData({ name: '', description: '', imageUrl: '' });
-  };
-
-  return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center mb-6">
-        <Palette className="w-6 h-6 text-blue-600 mr-3" />
-        <h2 className="text-xl font-bold">Mint Your NFT</h2>
-      </div>
-
-      <div className="mb-6 p-4 bg-gray-50 rounded">
-        <div className="flex justify-between">
-          <span>Your Balance:</span>
-          <span>{suiService.formatSUI(totalBalance)} SUI</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Mint Price:</span>
-          <span>{suiService.formatSUI(mintPrice)} SUI</span>
-        </div>
-        {!hasEnoughBalance && (
-          <p className="text-red-600 text-sm mt-2">Insufficient balance</p>
-        )}
-      </div>
-
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Name</label>
-          <input
-            type="text"
-            value={formData.name}
-            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="My Amazing NFT"
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Description</label>
-          <textarea
-            value={formData.description}
-            onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            rows={3}
-            placeholder="Describe your NFT..."
-            required
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Image URL</label>
-          <input
-            type="url"
-            value={formData.imageUrl}
-            onChange={(e) => setFormData(prev => ({ ...prev, imageUrl: e.target.value }))}
-            className="w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="https://example.com/image.png"
-            required
-          />
-        </div>
-
-        {formData.imageUrl && (
-          <div>
-            <p className="text-sm font-medium mb-2">Preview:</p>
-            <img
-              src={formData.imageUrl}
-              alt="Preview"
-              className="w-full h-32 object-cover rounded border"
-              onError={(e) => { e.currentTarget.style.display = 'none'; }}
-            />
-          </div>
-        )}
-
-        <button
-          type="submit"
-          disabled={loading || !hasEnoughBalance}
-          className={`w-full py-3 rounded-lg font-medium ${
-            loading || !hasEnoughBalance
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-600 hover:bg-blue-700 text-white'
-          }`}
-        >
-          {loading ? (
-            <div className="flex items-center justify-center">
-              <Loader2 className="w-4 h-4 animate-spin mr-2" />
-              Minting...
-            </div>
-          ) : (
-            `Mint NFT for ${suiService.formatSUI(mintPrice)} SUI`
-          )}
-        </button>
-      </form>
-    </div>
-  );
-};
-
-export default MintingForm;
-```
-
-Create `src/components/NFTGallery.tsx`:
-
-```typescript
-import React from 'react';
-import { RefreshCw, Image as ImageIcon } from 'lucide-react';
-
-interface Props {
-  nfts: any[];
-  loading: boolean;
-  onRefresh: () => void;
-}
-
-const NFTGallery: React.FC<Props> = ({ nfts, loading, onRefresh }) => {
-  return (
-    <div className="bg-white rounded-lg shadow p-6">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold">Your NFTs ({nfts.length})</h2>
-        <button
-          onClick={onRefresh}
-          disabled={loading}
-          className="p-2 text-gray-500 hover:text-gray-700"
-        >
-          <RefreshCw className={`w-5 h-5 ${loading ? 'animate-spin' : ''}`} />
-        </button>
-      </div>
-
-      {nfts.length === 0 ? (
-        <div className="text-center py-8">
-          <ImageIcon className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">No NFTs found</p>
-          <p className="text-sm text-gray-400">Mint your first NFT!</p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {nfts.map((nft, index) => {
-            const content = nft.data?.content;
-            const fields = content?.fields;
-            
-            return (
-              <div key={nft.data?.objectId || index} className="border rounded-lg p-4">
-                <img
-                  src={fields?.image_url || '/placeholder.png'}
-                  alt={fields?.name || 'NFT'}
-                  className="w-full h-32 object-cover rounded mb-3"
-                  onError={(e) => {
-                    e.currentTarget.src = '/placeholder.png';
-                  }}
-                />
-                <h3 className="font-semibold">{fields?.name || 'Unnamed NFT'}</h3>
-                <p className="text-sm text-gray-600 mb-2">
-                  {fields?.description || 'No description'}
-                </p>
-                <p className="text-xs text-gray-400">
-                  Creator: {fields?.creator?.slice(0, 6)}...{fields?.creator?.slice(-4)}
-                </p>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default NFTGallery;
-```
-
-### Step 7: Setup Tailwind CSS
-
-Update `tailwind.config.js`:
-
-```javascript
-module.exports = {
-  content: [
-    "./src/**/*.{js,jsx,ts,tsx}",
-  ],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-}
-```
-
-Add to `src/index.css`:
-
-```css
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-```
-
-### Step 8: Run the dApp
+### Step 5: Run the dApp
 
 ```bash
-# Start development server
-npm start
-
-# Build for production
-npm run build
+bun run dev
 ```
 
 ## 🎯 Workshop Wrap-up & Next Steps (30 minutes)
@@ -1715,6 +1963,7 @@ npm run build
 ### What You've Accomplished
 
 **Day 1 + Day 2 Complete Learning:**
+
 - ✅ Sui blockchain fundamentals and object-centric model
 - ✅ Move language from basics to advanced features
 - ✅ Smart contracts with dynamic fields and time-based logic
@@ -1725,6 +1974,7 @@ npm run build
 ### Key Features Implemented
 
 **Smart Contract:**
+
 - Time-based minting with start/end times
 - Dynamic fields for extensible metadata
 - Admin controls and public minting
@@ -1732,6 +1982,7 @@ npm run build
 - Gas-optimized data structures
 
 **Frontend dApp:**
+
 - Clean wallet connection interface
 - Real-time collection information display
 - NFT minting form with validation
@@ -1742,6 +1993,7 @@ npm run build
 ### Real-World Applications
 
 Your skills now enable building:
+
 - **NFT Projects**: Collections with time drops, utility features
 - **Gaming dApps**: Items, achievements, leaderboards
 - **DeFi Tools**: Yield farming, staking platforms
@@ -1751,18 +2003,21 @@ Your skills now enable building:
 ### Next Learning Steps
 
 **Week 1-2: Practice & Polish**
+
 - Add more features to your NFT dApp (marketplace, trading)
 - Experiment with different dynamic field use cases
 - Implement batch minting functionality
 - Add more sophisticated time-based mechanics
 
 **Month 1: Advanced Patterns**
+
 - Build a simple DEX or AMM
 - Create governance token systems
 - Implement cross-contract interactions
 - Explore formal verification with Move Prover
 
 **Month 2-3: Production Ready**
+
 - Deploy to Sui Mainnet
 - Implement proper error handling and monitoring
 - Add analytics and user tracking
@@ -1771,6 +2026,7 @@ Your skills now enable building:
 ### Career Readiness
 
 **You're now ready for:**
+
 - Junior Blockchain Developer roles
 - Contributing to open-source Sui projects
 - Building your own DeFi/NFT projects
@@ -1795,5 +2051,5 @@ You've successfully completed a comprehensive 2-day journey from Sui beginner to
 ---
 
 **Workshop Complete**  
-*From Zero to Sui Developer in 2 Days*  
-*Ready to Build on the Future of Blockchain* ✨
+_From Zero to Sui Developer in 2 Days_  
+_Ready to Build on the Future of Blockchain_ ✨
