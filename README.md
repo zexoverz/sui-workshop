@@ -856,3 +856,12 @@ Time for open Q&A and discussion about:
 ---
 
 **Congratulations!** You've completed the Sui Blockchain Workshop. You now have the foundation to build sophisticated dApps on Sui using Move language.
+
+
+### PPT Module List
+
+- module 1 : https://docs.google.com/presentation/d/10wPI7tqBYCBmRlKq-qkcuLkV0vywtcyYaUXW175A5GA/edit?usp=sharing
+- module 2 : https://docs.google.com/presentation/d/1EsmH5pDycVwgYCvj3JSt3tQBY7Wi7R3obEmOZ3HLJKY/edit?usp=sharing
+- module 3 : https://docs.google.com/presentation/d/1puwyfLT9-WKF8jMHZtONjrtQ22xRdP4LFGKAMoYxEp0/edit?usp=sharing
+- module 4 : https://docs.google.com/presentation/d/1RvhrIOMx62pdIGegZZxDPB6Cfm49o18KfT5jxDk1MgY/edit?usp=sharing
+- module 5 : https://docs.google.com/presentation/d/1VYIAQRcsAfuo3o2Vm49shoqGGL2XmVWJrpqqMTyS-p4/edit?usp=sharing
